@@ -11,7 +11,7 @@ router.post('/jh/position', (req, res) => {
   const dict = fs.readFileSync(fd, 'utf-8', 'as+')
   const splitDict = dict.split(' 20\n')
 
-  const updateDict = positionCheck(splitDict, position_name, regex_name, 'position')
+  const updateDict = infoCheck(splitDict, position_name, regex_name, 'position')
 
   fs.closeSync(fd)
 
@@ -27,7 +27,23 @@ router.post('/jh/cpnyInfo', (req, res) => {
   const dict = fs.readFileSync(fd, 'utf-8', 'as+')
   const splitDict = dict.split(' 20\n')
 
-  const updateDict = positionCheck(splitDict, info_name, regex_name, 'cpnyInfo')
+  const updateDict = infoCheck(splitDict, info_name, regex_name, 'cpnyInfo')
+
+  fs.closeSync(fd)
+
+  res.status(200).send(updateDict)
+})
+
+// 棉花糖新增主類別Dict
+router.post('/cs/dict', (req, res) => {
+  const {info_name, regex_name} = req.query
+
+  const fd = fs.openSync(path.resolve(__dirname, '/home/bill/桌面/Work/BF24_HR/dict/cs_dict.txt'), 'as+', 0o666)
+
+  const dict = fs.readFileSync(fd, 'utf-8', 'as+')
+  const splitDict = dict.split(' 20\n')
+
+  const updateDict = infoCheck(splitDict, info_name, regex_name, 'cs_dict')
 
   fs.closeSync(fd)
 
@@ -35,7 +51,7 @@ router.post('/jh/cpnyInfo', (req, res) => {
 })
 
 // 檢查重複並呼叫appendFile()來寫入資料
-function positionCheck(dict, name, regex_name, category){
+function infoCheck(dict, name, regex_name, category){
   const nameCheck = dict.some(item => item == name)
   const regex_nameCheck = dict.some(item => item == regex_name)
   return appendFile({nameCheck, regex_nameCheck}, name, regex_name, category)
@@ -43,16 +59,28 @@ function positionCheck(dict, name, regex_name, category){
 
 // 寫入資料並回傳寫入的結果
 function appendFile(check, name, regex_name, category){
-    const name_text = `${name} 20\n`
-    const regex_name_text = `${regex_name} 20\n`
-  if(!check.nameCheck){
-    fs.appendFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF25_JohnnyHire/dict/${category}.txt`), name_text, 'utf-8', '0o666', 'as+')
-  }
-  if(!check.regex_nameCheck){
-    fs.appendFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF25_JohnnyHire/dict/${category}.txt`), regex_name_text, 'utf-8', '0o666', 'as+')
-  }
+  const name_text = `${name} 20\n`
+  const regex_name_text = `${regex_name} 20\n`
 
-  return fs.readFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF25_JohnnyHire/dict/${category}.txt`), 'utf-8')
+  if(!category.includes('cs_')){
+    if(!check.nameCheck){
+    fs.appendFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF25_JohnnyHire/dict/${category}.txt`), name_text, 'utf-8', '0o666', 'as+')
+    }
+    if(!check.regex_nameCheck){
+      fs.appendFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF25_JohnnyHire/dict/${category}.txt`), regex_name_text, 'utf-8', '0o666', 'as+')
+    }
+
+    return fs.readFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF25_JohnnyHire/dict/${category}.txt`), 'utf-8')
+  }else{
+    if(!check.nameCheck){
+    fs.appendFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF24_HR/dict/${category}.txt`), name_text, 'utf-8', '0o666', 'as+')
+    }
+    if(!check.regex_nameCheck){
+      fs.appendFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF24_HR/dict/${category}.txt`), regex_name_text, 'utf-8', '0o666', 'as+')
+    }
+
+    return fs.readFileSync(path.resolve(__dirname, `/home/bill/桌面/Work/BF24_HR/dict/${category}.txt`), 'utf-8')
+  }
 }
 
 module.exports = router
